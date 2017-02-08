@@ -1,9 +1,0 @@
-﻿  PCH.cpp
-  Dummy.cpp
-  Inner.cpp
-  Test.cpp
-  Generating code
-  All 891 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finished generating code
-  Test.vcxproj -> D:\Project\KmLibs\KmSerializer\IDE\\..\Binary\Release\Test.exe
-  Test.vcxproj -> D:\Project\KmLibs\KmSerializer\IDE\\..\Binary\Release\Test.pdb (Full PDB)

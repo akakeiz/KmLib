@@ -1,9 +1,0 @@
-﻿  PCH.cpp
-  StreamWriter.cpp
-  StreamReader.cpp
-  Stream.cpp
-  BufferWriter.cpp
-  BufferReader.cpp
-  KmNumeric.cpp
-  Generating Code...
-  Serializer.vcxproj -> D:\Project\KmLibs\KmSerializer\IDE\\..\Binary\Debug\Serializer.lib
