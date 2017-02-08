@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{71af3e8f-23fd-45ce-8a5f-8d697af8db34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{5e195932-e3cd-4c79-be75-d1dfb21e0bae}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\Serializer\PCH.cpp" />
+    <ClCompile Include="..\..\Source\Serializer\Source\BufferReader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Serializer\Source\BufferWriter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Serializer\Source\Stream.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Serializer\Source\StreamReader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Serializer\Source\StreamWriter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Serializer\Common\KmNumeric.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\Serializer\KmDataTypes.h" />
+    <ClInclude Include="..\..\Source\Serializer\PCH.h" />
+    <ClInclude Include="..\..\Source\Serializer\Source\BufferReader.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Source\BufferWriter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Source\Serializable.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Source\Stream.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Source\StreamReader.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Source\StreamWriter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Serializer\Common\KmNumeric.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
