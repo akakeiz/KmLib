@@ -1,0 +1,13 @@
+@category,1,,,,
+#,classname,GetSomething,,,팀 정보
+request,member,long,teamId,,팀 ID
+,member,string,teamName,,구단 이름
+,member,int,teamIcon,,구단 아이콘
+response,member,string,associationName,,가입 이사회 이름
+,,,,,
+,,,,,
+#,classname,SetAnother,,,팀 정보
+request,member,long,teamId,,팀 ID
+,member,string,teamName,,구단 이름
+,member,int,teamIcon,,구단 아이콘
+response,member,string,associationName,,가입 이사회 이름

@@ -28,6 +28,9 @@
     <ClCompile Include="..\..\Source\Serializer\Common\KmNumeric.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="PktBase.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Serializer\KmDataTypes.h" />
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Serializer\Common\KmNumeric.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PktBase.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

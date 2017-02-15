@@ -129,6 +129,7 @@
     <ClCompile Include="..\..\Source\Serializer\Source\Stream.cpp" />
     <ClCompile Include="..\..\Source\Serializer\Source\StreamReader.cpp" />
     <ClCompile Include="..\..\Source\Serializer\Source\StreamWriter.cpp" />
+    <ClCompile Include="PktBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\Serializer\Common\KmNumeric.h" />
@@ -140,6 +141,7 @@
     <ClInclude Include="..\..\Source\Serializer\Source\Stream.h" />
     <ClInclude Include="..\..\Source\Serializer\Source\StreamReader.h" />
     <ClInclude Include="..\..\Source\Serializer\Source\StreamWriter.h" />
+    <ClInclude Include="PktBase.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
