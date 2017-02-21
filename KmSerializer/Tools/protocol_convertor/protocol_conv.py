@@ -8,6 +8,8 @@ import codecs
 import csv
 import time
 import copy
+import pc_util
+import config
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -27,8 +29,6 @@ _member=[]
 _response_originalclass =[]
 _request_originalclass = []
 _originalclass = []
-_ifdef=[]
-_define=[]
 _type_cpp=[]
 _type_cs=[]
 _request_member = []
@@ -57,9 +57,11 @@ _layout_maxres_varname = 0
 
 # PacketID
 _packet_ids = {}
+_packet_hashcode = 0
+_layout_max_pktname = 0
 
 # [request, response, notify, inner] 가 들어감
-_signal_type = ''
+_signal_type = 'inner'
 
 # 클래스의 유무 탐색용
 _class_sumarry = []
@@ -69,7 +71,24 @@ _TYPE_SUMARRY = ['char','unsigned char','short',
 'unsigned int','long','unsigned long',
 'float','double','long double','bool','string','binary']
 
-_PARAM_SUMARRY = ['filepath','classname','member','inner']
+_PARAM_SUMARRY = ['filepath','classname','member']
+
+_TYPE_MAP_CPP = { 'char':'kmInt8', 'uchar':'kmUInt8',
+                  'short':'kmInt16', 'ushort':'kmUInt16',
+                  'int':'kmInt32', 'uint':'kmUInt32',
+                  'long':'kmInt64', 'ulong':'kmUInt64',
+                  'float':'kmFloat', 'double':'kmDouble',
+                  'bool':'kmBool', 'string':'std::string',
+                  'binary':'std::string' }
+
+_TYPE_MAP_CSS = { 'char':'char', 'uchar':'unsigned char',
+                  'short':'short', 'ushort':'unsigned short',
+                  'int':'int', 'uint':'unsigned int',
+                  'long':'long', 'ulong':'unsigned long',
+                  'float':'float', 'double':'double',
+                  'bool':'bool', 'string':'string',
+                  'binary':'byte[]' }
+
 
 #_TEMPLATE_FILE =['template.cpp','template_cpp.h','template.cs','template_inner.cs','template_inner.cpp','template_inner.h']
 _TEMPLATE_FILE =['template_packet.cpp','template_packet.h','template_packet.cs','template_inner.cs','template_inner.cpp','template_inner.h']
@@ -94,7 +113,7 @@ def set_class_name(book):
                 if len(class_name) != len(result):
                     sys.stderr.write(u'classnameType error ')
                     return
-                setparam('class_sumarry',class_name.lower())
+                setparam('class_sumarry',class_name)
     print u'\n클래스 수\n'
     print len(_class_sumarry)
 
@@ -112,7 +131,6 @@ def convert_protocol(excel_file):
     for sheets in range(book.nsheets):
         sheet_name = book.sheet_by_index(sheets).name
         sheet = book.sheet_by_index(sheets)
-
 
         column = 0
         for row in range(sheet.nrows):
@@ -146,7 +164,7 @@ def search_cell_value(sheet,startrow,sheet_name):
                                 #共通クラス時にファイルのインクルードと変数宣言を追加
                                     setparam('originalclass',replace_parentheses(cell_value2))
                                 #インクルード
-                                    setparam('include_sub',replace_parentheses(cell_value2).lower()+'.h')
+                                    setparam('include_sub',replace_parentheses(cell_value2)+'.h')
                             else :
                                 continue
                         set_comment_type(cell_value1)
@@ -183,36 +201,51 @@ def file_write_h(language):
     # template_inner.h
     if _signal_type == 'inner':
         tmpl_inner_h = env.get_template(_TEMPLATE_FILE[5])
-        fout_inner_h = open(_filepath_cpp[0]+"/common/"+_classname[0].lower()+'.h',"wb")
+        fout_inner_h = open(_filepath_cpp[0]+"/"+_classname[0]+'.h',"wb")
         fout_inner_h.write(tmpl_inner_h.render(param=sendparam(language)).encode("utf-8"))
         fout_inner_h.close
-        return
+
+    # template_notify.h
+    elif _signal_type == 'notify':
+        tmpl_notify_h = env.get_template( 'template_notify.h' )
+        fout_notify_h = open(_filepath_cpp[0]+"/"+_classname[0]+'.h',"wb")
+        fout_notify_h.write(tmpl_notify_h.render(param=sendparam(language)).encode("utf-8"))
+        fout_notify_h.close
 
     # template_cpp.h
-    tmpl_h = env.get_template(_TEMPLATE_FILE[1])
-    fout_h = codecs.open(_filepath_cpp[0]+"/"+_classname[0].lower()+'.h',"wb","utf-8")
-    fout_h.write(tmpl_h.render(param=sendparam(language)))
-    fout_h.close
+    else:
+        tmpl_h = env.get_template(_TEMPLATE_FILE[1])
+        fout_h = codecs.open(_filepath_cpp[0]+"/"+_classname[0]+'.h',"wb","utf-8")
+        fout_h.write(tmpl_h.render(param=sendparam(language)))
+        fout_h.close
+
 
 def file_write_cpp():
     env = Environment(loader = FileSystemLoader(_TEMPLATE_DIR, encoding='utf-8'),autoescape = False)
     global _signal_type
     file_write_h('cpp')
-    setparam('include',_classname[0].lower()+'.h')
-    #共通クラス
+    setparam('include',_classname[0]+'.h')
+
+    # template_inner.cpp
     if _signal_type == 'inner':
-        # template_inner.cpp
         tmpl_inner_cpp = env.get_template(_TEMPLATE_FILE[4])
-        fout_inner_cpp = open(_filepath_cpp[0]+"/common/"+_classname[0].lower()+'.cpp',"wb")
+        fout_inner_cpp = open(_filepath_cpp[0]+"/"+_classname[0]+'.cpp',"wb")
         fout_inner_cpp.write(tmpl_inner_cpp.render(param=sendparam('cpp')).encode("utf-8"))
         fout_inner_cpp.close
-        return
 
-    # template.cpp
-    tmpl_cpp = env.get_template(_TEMPLATE_FILE[0])
-    fout_cpp = codecs.open(_filepath_cpp[0]+"/"+_classname[0].lower()+'.cpp',"wb","utf-8")
-    fout_cpp.write(tmpl_cpp.render(param=sendparam('cpp')))
-    fout_cpp.close
+    # template_notify.cpp
+    elif _signal_type == 'notify':
+        tmpl_notify_cpp = env.get_template( 'template_notify.cpp' )
+        fout_notify_cpp = open(_filepath_cpp[0]+"/"+_classname[0]+'.cpp',"wb")
+        fout_notify_cpp.write(tmpl_notify_cpp.render(param=sendparam('cpp')).encode("utf-8"))
+        fout_notify_cpp.close
+
+    # template_packet.cpp
+    else:
+        tmpl_cpp = env.get_template(_TEMPLATE_FILE[0])
+        fout_cpp = codecs.open(_filepath_cpp[0]+"/"+_classname[0]+'.cpp',"wb","utf-8")
+        fout_cpp.write(tmpl_cpp.render(param=sendparam('cpp')))
+        fout_cpp.close
 
 
 def file_write_cs():
@@ -225,7 +258,7 @@ def file_write_cs():
     if _signal_type == 'inner':
         # template_inner.cs
         tmpl_inner_cs = env.get_template(_TEMPLATE_FILE[3])
-        fout_inner_cs = open(_filepath_cs[0]+"/Param/"+camel_to_pascal(_classname[0])+'.cs',"w")
+        fout_inner_cs = open(_filepath_cs[0]+"/"+camel_to_pascal(_classname[0])+'.cs',"w")
         fout_inner_cs.write(tmpl_inner_cs.render(param=sendparam('cs')).encode("utf-8-sig"))
         fout_inner_cs.close
     else :
@@ -239,19 +272,25 @@ def file_write_cs():
 def FileWritePacketID():
     env = Environment(loader = FileSystemLoader(_TEMPLATE_DIR, encoding='utf-8'),
         autoescape = False)
-    #
+
+    # C++용 .h파일 생성
     tmpl_h = env.get_template( 'template_packetid.h' )
     fout_h = codecs.open(_filepath_cpp[0]+"/" + 'PktID' +'.h',"wb","utf-8")
-    fout_h.write( tmpl_h.render(param=SendParamForPacketID()) )
+    fout_h.write( tmpl_h.render(param=SendParamForPacketID()).encode("utf-8-sig") )
     fout_h.close
 
+    # C++용 .cpp파일 생성
+    tmpl_cpp = env.get_template( 'template_packetid.cpp' )
+    fout_cpp = codecs.open(_filepath_cpp[0]+"/" + 'PktID' +'.cpp',"wb","utf-8")
+    fout_cpp.write( tmpl_cpp.render(param=SendParamForPacketID()).encode("utf-8-sig") )
+    fout_cpp.close
 
 
 def check_param(value):
     for sumarry in _PARAM_SUMARRY:
         if sumarry == value:
             return True
-    if value != "":
+    if value != "" and value != "-":
         sys.stderr.write('param input error => %s\n'% value)
     return False
 
@@ -264,6 +303,8 @@ def convert_classname(value):
             result.append(camel_to_pascal(le))
     return result
 
+
+# 타입을 변환한다.
 def convert_type(value,language):
     if value.count('[')>0 or value.count(']')>0 :
         value=value.replace('[', '')
@@ -273,19 +314,21 @@ def convert_type(value,language):
             return 'List<'+value+'>'
         if language == 'cpp':
             return 'std::list<'+value+'>'
-    if not value in _TYPE_SUMARRY:
-        value = camel_to_pascal(value)
+
     if language == 'cpp':
-        if value == 'string':
-            return 'std::'+value
-        elif value == 'long':
-            return 'int64_t'
-        elif value == 'binary':
-            return 'std::string'
+        if value in _TYPE_MAP_CPP:
+            value = _TYPE_MAP_CPP[ value ]
+        else:
+            value = camel_to_pascal(value)
+
     if language == 'cs':
-        if value == 'binary':
-            return 'byte[]'
+        if value in _TYPE_MAP_CSS:
+            value = _TYPE_MAP_CSS[ value ]
+        else:
+            value = camel_to_pascal(value)
+
     return value
+
 
 def check_filepath(path):
     if not os.path.exists(path):
@@ -299,7 +342,6 @@ def check_filepath(path):
     else :
         #Clientのpath
         return True
-
 
 
 
@@ -334,7 +376,7 @@ def check_original_class(value):
 
 def check_existence_class(value):
     for name in _class_sumarry:
-        if name == value.lower() :
+        if name == value :
             return True
     sys.stderr.write(u'클래스가 시트에 존재하지 않습니다 %s'%value)
     return False
@@ -389,7 +431,7 @@ def setparam( param, item ):
             _filepath_cpp.append(item)
 
     elif param == 'member':
-        if _signal_type == 'request':
+        if _signal_type=='request' or _signal_type=='inner' or _signal_type=='notify':
             _request_member.append(item)
             _layout_maxreq_varname = max( len(item), _layout_maxreq_varname )
         elif _signal_type == 'response':
@@ -403,13 +445,9 @@ def setparam( param, item ):
         elif _signal_type == 'response':
             _response_originalclass.append(convert_type(item,'cpp'))
         _originalclass.append(convert_type(item,'cpp'))
-    elif param == 'ifdef':
-        _ifdef.append(item)
-    elif param == 'define':
-        _define.append(item)
 
     elif param == 'type':
-        if _signal_type == 'request':
+        if _signal_type=='request' or _signal_type=='inner' or _signal_type=='notify':
             _request_type.append(convert_type(item,'cs'))
             _request_type_cs.append(convert_type(item,'cs'))
             _request_type_cpp.append(convert_type(item,'cpp'))
@@ -426,7 +464,7 @@ def setparam( param, item ):
         _include_sub.append(item)
     elif param == 'class_sumarry':
         for summary in _class_sumarry:
-            if summary == item.lower():
+            if summary == item:
                 sys.stderr.write( 'Class name Duplicated \n %s'%item )   #[Error] 클래스 이름 중복
                 return
         _class_sumarry.append(item)
@@ -437,7 +475,7 @@ def setparam( param, item ):
 
         global _comment_type
         if _comment_type == 'member':
-            if _signal_type == 'request':
+            if _signal_type=='request' or _signal_type=='inner' or _signal_type=='notify':
                 _comment_member_request.append(item)
             elif _signal_type == 'response':
                 _comment_member_response.append(item)
@@ -458,8 +496,6 @@ def clear_param():
     del _originalclass[0:len(_originalclass)]
     del _request_originalclass[0:len(_request_originalclass)]
     del _response_originalclass[0:len(_response_originalclass)]
-    del _ifdef[0:len(_ifdef)]
-    del _define[0:len(_define)]
     del _include_sub[0:len(_include_sub)]
     del _type_cpp[0:len(_type_cpp)]
     del _type_cs[0:len(_type_cs)]
@@ -473,6 +509,11 @@ def clear_param():
     del _comment_class[0:len(_comment_class)]
     del _comment_member_response[0:len(_comment_member_response)]
     del _comment_member_request[0:len(_comment_member_request)]
+
+    global _layout_maxreq_typelen
+    global _layout_maxreq_varname
+    global _layout_maxres_typelen
+    global _layout_maxres_varname
     _layout_maxreq_typelen = 0
     _layout_maxreq_varname = 0
     _layout_maxres_typelen = 0
@@ -490,10 +531,6 @@ def getparam(item):
         return _filepath
     elif item == 'member':
         return _member
-    elif item == 'ifdef':
-        return _ifdef
-    elif item == 'define':
-        return _define
     elif item == 'include_sub':
         return list(set(_include_sub))
     elif item == 'type_cpp':
@@ -567,10 +604,6 @@ def sendparam(language):
         value['request_originalclass'] = getparam('request_originalclass')
         value['response_originalclass'] = getparam('response_originalclass')
         value['originalclass'] = getparam('originalclass')
-    if len( getparam('ifdef') ) != 0 :
-        value['ifdef'] = getparam('ifdef')
-    if len( getparam('define') )!= 0:
-        value['define'] = getparam('define')
     if len( getparam('include_sub') )!= 0:
         value['include_sub'] = getparam('include_sub')
     if len( getparam('request_member') )!= 0:
@@ -619,13 +652,18 @@ def sendparam(language):
 
 def SendParamForPacketID():
     global _packet_ids
-    param = []
+    param = {}
+    param[ 'packet' ] = []
+    param[ 'layout_max_name' ] = 0
+    param[ 'packet_hashcode' ] = '0x' + '{:016x}'.format( pc_util.Generate64BitUuid() ).upper()
 
     for key, value in _packet_ids.iteritems():
         seq_no = 1
         for packet_name in value:
             packet_id = (int(key) << 16) + seq_no
-            param.append( ( packet_name, packet_id ) )
+            packet_id = '0x' + '{:08x}'.format(packet_id).upper()
+            param[ 'packet' ].append( ( packet_name, packet_id ) )
+            param[ 'layout_max_name' ] = max( param[ 'layout_max_name' ], len(packet_name) )
             seq_no += 1
 
     return param
@@ -660,8 +698,10 @@ def camel_to_pascal(st):
 def ConvData(path) :
     print u'프로토콜 자동 생성 중...'
 
-    _filepath_cpp.append("./server/")
-    _filepath_cs.append("./client/")
+    pc_util.TryMakeDir( config.output_path_cpp )
+    pc_util.TryMakeDir( config.output_path_cs )
+    _filepath_cpp.append( config.output_path_cpp )
+    _filepath_cs.append( config.output_path_cs )
 
     fullPath = os.path.abspath(path)
 
@@ -674,7 +714,8 @@ def ConvData(path) :
 
     for dir in GetFiles(fullPath):
 
-        if dir == 'protocol_conv_Common.csv' :
+        if dir == 'protocol_conv_Common.csv' or \
+            len( re.findall( r'.*csv#', dir ) ) != 0:
             continue;
 
         print dir
@@ -728,6 +769,7 @@ def ConvertProtocolCsv(sheet, file_name):
     SetClassName(sheet)
     category_no = PreparePacketID( sheet, file_name )
 
+    global _signal_type
     column = 0
     for row in range(0, len(sheet)):
         cell_v1 = GetCellString(sheet, row, column)
@@ -735,7 +777,7 @@ def ConvertProtocolCsv(sheet, file_name):
             SearchCellValue(sheet, row)
         if cell_v1 == '#':
             SearchCellValue(sheet, row)
-            setparam('filename', file_name.lower())
+            setparam('filename', file_name)
             file_write_cs()
             file_write_cpp()
             AssignPacketID( category_no )
@@ -769,7 +811,7 @@ def SetClassName(sheet):
                 return
 
             #print class_name
-            setparam('class_sumarry', class_name.lower())
+            setparam('class_sumarry', class_name)
 
         row_index += 1
 
@@ -797,6 +839,11 @@ def PreparePacketID( sheet, file_name ):
 
 def AssignPacketID( category_no ):
     global _packet_ids
+    global _signal_type
+
+    # inner 타입은 패킷ID가 필요 없다.
+    if _signal_type == 'inner':
+        return
     _packet_ids[ category_no ].append( copy.deepcopy( _classname[0] ) )
 
 
@@ -858,7 +905,7 @@ def SearchCellValue(sheet, startrow):
         cell_value1 = GetCellString(sheet, rows, columns)
 
         if GetCellString(sheet, rows, 0) != '':
-                    set_signal_type(GetCellString(sheet, rows, 0))
+            set_signal_type(GetCellString(sheet, rows, 0))
 
         if check_param(cell_value1):
             if cell_value1 != "":
@@ -880,7 +927,7 @@ def SearchCellValue(sheet, startrow):
                                 setparam('originalclass', replace_parentheses(cell_value2))
 
                             # INCLUDE
-                                setparam('include_sub', replace_parentheses(cell_value2).lower() + '.h')
+                                setparam('include_sub', replace_parentheses(cell_value2) + '.h')
                         else :
                             continue
 
@@ -901,10 +948,6 @@ def SearchCellValue(sheet, startrow):
                     global _comment_type
                     setparam("comment", GetCellString(sheet, rows, columns + 4) )
                     setparam('classname', cell_value2)
-
-                    # ifdef,define의 문자열 생성  [$$필요없으니 지우자]
-                    setparam('ifdef', createstring(cell_value2))
-                    setparam('define', createstring(cell_value2))
 
                 elif cell_value1 == 'filepath':
                     setparam('filepath', cell_value2)

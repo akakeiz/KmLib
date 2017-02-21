@@ -1,13 +1,30 @@
-@category,1,,,,
-#,classname,GetSomething,,,팀 정보
-request,member,long,teamId,,팀 ID
-,member,string,teamName,,구단 이름
-,member,int,teamIcon,,구단 아이콘
-response,member,string,associationName,,가입 이사회 이름
+#,classname,ActorSimple,,,액터 간략정보
+inner,member,long,actorID,,액터 ID
+,member,float,curPosX,,현재위치 x좌표
+,member,float,curPosY,,현재위치 y좌표
+,member,float,curDirection,,현재방향
+,member,int,curHP,,현재 HP
+,member,int,curAP,,현재 AP
+,member,int,curMP,,현재 MP
 ,,,,,
 ,,,,,
-#,classname,SetAnother,,,팀 정보
-request,member,long,teamId,,팀 ID
-,member,string,teamName,,구단 이름
-,member,int,teamIcon,,구단 아이콘
-response,member,string,associationName,,가입 이사회 이름
+#,classname,Actor,,,액터 정보
+inner,member,long,actorID,,액터 ID
+,member,string,actorName,,액터 이름
+,member,float,curPosX,,현재위치 x좌표
+,member,float,curPosY,,현재위치 y좌표
+,member,float,curDirection,,현재방향
+,member,int,curHP,,현재 HP
+,member,int,curAP,,현재 AP
+,member,int,curMP,,현재 MP
+,member,int,maxHP,,최대 HP
+,member,int,maxAP,,최대 AP
+,member,int,maxMP,,최대 MP
+,member,ActorStat,stat,,스탯정보
+,,,,,
+,,,,,
+#,classname,ActorStat,,,액터 스탯
+inner,member,int,str,,힘
+,member,int,dex,,민첩
+,member,int,con,,체력
+,member,int,int,,지력

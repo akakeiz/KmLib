@@ -26,10 +26,12 @@
 // {{param['comment_class'][0]}}
 {%endif-%}
 namespace Protocol {
+namespace {{param['classname'][0]}} {
 
-    class {{param['classname'][0]}}
+    //***** 요청 패킷
+    class Notify
     :
-    public Serialize
+    public PktBase
     {
     {%- if param['request_member'] %}
     public:
@@ -39,6 +41,9 @@ namespace Protocol {
     {%-endif %}
 
     public:
+        /// 패킷의 ID를 반환한다.
+        virtual kmInt32 GetPacketID() const override;
+
         /// 패킷을 직렬화 한다.
         virtual kmBool Serialize( StreamWriter& writer ) const override;
 
@@ -46,4 +51,5 @@ namespace Protocol {
         virtual kmBool Deserialize( StreamReader& reader ) override;
     };
 
+} /* {{param['classname'][0]}} */
 } /* Protocol */

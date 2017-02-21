@@ -11,9 +11,17 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief	패킷의 ID를 반환한다.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+kmInt32 Protocol::{{param['classname'][0]}}::Notify::GetPacketID() const
+{
+    return PacketID::{{param['classname'][0]}};
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief	패킷을 직렬화 한다.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-kmBool Protocol::{{param['classname'][0]}}::Serialize( StreamWriter& writer ) const
+kmBool Protocol::{{param['classname'][0]}}::Notify::Serialize( StreamWriter& writer ) const
 {
     {%- for member in param['request_member'] %}
     if( !(writer << {{member}}) ) return false;
@@ -25,7 +33,7 @@ kmBool Protocol::{{param['classname'][0]}}::Serialize( StreamWriter& writer ) co
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief	패킷을 역직렬화 한다.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-kmBool Protocol::{{param['classname'][0]}}::Deserialize( StreamReader& reader )
+kmBool Protocol::{{param['classname'][0]}}::Notify::Deserialize( StreamReader& reader )
 {
     {%- for member in param['request_member'] %}
     if( !(reader >> {{member}}) ) return false;
@@ -33,3 +41,4 @@ kmBool Protocol::{{param['classname'][0]}}::Deserialize( StreamReader& reader )
 
     return true;
 }
+

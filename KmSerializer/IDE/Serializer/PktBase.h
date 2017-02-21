@@ -21,7 +21,7 @@ public:
 	virtual ~PktBase() {}
 
 	/// 패킷 길이를 설정한다.
-	kmVoid SetLength( kmInt16 length ) { m_length = length }
+	kmVoid SetLength( kmInt16 length ) { m_length = length; }
 
 	/// 패킷 길이를 반환한다.
 	kmInt16 GetLength() { return m_length; }
